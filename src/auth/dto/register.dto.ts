@@ -10,5 +10,5 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(6)
-  hash: string;
+  password: string;
 }
