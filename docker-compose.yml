@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  paiting-budget-db:
+    image: postgres:13
+    container_name: paiting-budget-database
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - paiting-budget-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  paiting-budget-postgres-data:
