@@ -6,3 +6,43 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id      Int     @id @default(autoincrement())
+  email   String  @unique
+  name    String
+  hash    String
+  colors  Color[]
+  clients Client[]
+}
+
+model Color {
+  id                  Int     @id @default(autoincrement())
+  name                String
+  pricePerSquareMeter Decimal @default(0.0)
+  userId              Int
+  user                User    @relation(fields: [userId], references: [id])
+  budgets             Budget[]
+}
+
+model Client {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id])
+  name    String
+  email   String   @unique
+  phone   String   @unique
+  budgets Budget[]
+}
+
+model Budget {
+  id           Int      @id @default(autoincrement())
+  description  String?
+  squareMeters Decimal
+  discount     Int      @default(0)
+  totalPrice   Decimal
+  clientId     Int
+  client       Client   @relation(fields: [clientId], references: [id])
+  colorId      Int
+  color        Color    @relation(fields: [colorId], references: [id])
+}
