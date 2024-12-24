@@ -4,10 +4,14 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { LoginDto } from './dto/login.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+  ) {}
 
   async register(dto: RegisterDto) {
     const saltOrRounds = 10;
@@ -43,14 +47,30 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('email incorrect');
+    if (!user) throw new ForbiddenException('Email incorrect');
 
     const isMatch = await bcrypt.compare(dto.password, user.hash);
 
-    if (!isMatch) throw new ForbiddenException('password incorrect');
+    if (!isMatch) throw new ForbiddenException('Password incorrect');
 
-    delete user.hash;
+    return this.signToken(user.id, user.email);
+  }
 
-    return user;
+  async signToken(
+    userId: number,
+    email: string,
+  ): Promise<{ acess_token: string }> {
+    const payload = { sub: userId, email };
+
+    const secret = process.env.JWT_SECRET;
+
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
+
+    return {
+      acess_token: token,
+    };
   }
 }
