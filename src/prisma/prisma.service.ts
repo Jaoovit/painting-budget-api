@@ -6,7 +6,7 @@ export class PrismaService extends PrismaClient {
   constructor() {
     const DATABASE_URL = process.env.DATABASE_URL;
     super({
-      datasource: {
+      datasources: {
         db: {
           url: DATABASE_URL,
         },
