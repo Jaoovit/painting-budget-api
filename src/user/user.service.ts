@@ -1,5 +1,6 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EditUserDto } from './dto/edit-user.dto';
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,24 @@ export class UserService {
       },
     });
 
-    if (!user) throw new ForbiddenException('User not exist');
+    if (!user) throw new NotFoundException('User not exist');
+
+    return user;
+  }
+
+  async editUserName(dto: EditUserDto, userId: number) {
+    await this.verifyUserExist(userId);
+
+    const user = await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        name: dto.name,
+      },
+    });
+
+    delete user.hash;
 
     return user;
   }
