@@ -12,6 +12,7 @@ model User {
   email   String  @unique
   name    String
   hash    String
+  budgets Budget[]
   colors  Color[]
   clients Client[] @relation("UserToClient")
 }
@@ -40,6 +41,8 @@ model Budget {
   squareMeters Decimal
   discount     Int      @default(0)
   totalPrice   Decimal
+  userId       Int
+  user         User   @relation(fields: [userId], references: [id])
   clientId     Int
   client       Client   @relation(fields: [clientId], references: [id])
   colorId      Int

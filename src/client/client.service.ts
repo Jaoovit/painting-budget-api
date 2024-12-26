@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
 
@@ -41,6 +45,39 @@ export class ClientService {
         },
       });
     }
+
+    return client;
+  }
+
+  async getClientByUserId(userId: number) {
+    const clients = await this.prisma.client.findMany({
+      where: {
+        users: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+    });
+
+    return clients;
+  }
+
+  async getClientById(clientId: number, userId: number) {
+    const client = await this.prisma.client.findUnique({
+      where: {
+        id: clientId,
+      },
+      include: {
+        budgets: {
+          where: {
+            userId,
+          },
+        },
+      },
+    });
+
+    if (!client) throw new NotFoundException('Client not exist');
 
     return client;
   }
