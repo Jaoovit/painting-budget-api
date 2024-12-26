@@ -29,12 +29,23 @@ export class ClientController {
   }
 
   @Get(':id')
-  getClientById(@Param('id') clientId: number, @GetUser('id') userId: number) {
+  getClientByIdWithBudgets(
+    @Param('id') clientId: number,
+    @GetUser('id') userId: number,
+  ) {
     return this.clientService.getClientByIdWithBudgets(+clientId, userId);
   }
 
   @Patch(':id')
   updateClient(@Body() dto: EditClientDto, @Param('id') clientId: number) {
     return this.clientService.updateClient(dto, +clientId);
+  }
+
+  @Patch(':id/disconect')
+  disconnectUserFromClient(
+    @Param('id') clientId: number,
+    @GetUser('id') userId: number,
+  ) {
+    return this.clientService.disconnectUserFromClient(+clientId, userId);
   }
 }

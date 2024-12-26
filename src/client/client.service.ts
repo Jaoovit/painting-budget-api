@@ -68,6 +68,11 @@ export class ClientService {
     const client = await this.prisma.client.findUnique({
       where: {
         id: clientId,
+        users: {
+          some: {
+            id: userId,
+          },
+        },
       },
       include: {
         budgets: {
@@ -107,5 +112,38 @@ export class ClientService {
     });
 
     return client;
+  }
+
+  async disconnectUserFromClient(clientId: number, userId: number) {
+    const client = await this.prisma.client.findUnique({
+      where: {
+        id: clientId,
+      },
+      include: {
+        users: true,
+      },
+    });
+
+    if (!client) {
+      throw new NotFoundException('Client not found');
+    }
+
+    const userExists = client.users.some((user) => user.id === userId);
+
+    if (!userExists)
+      throw new NotFoundException('User is not associated with this client');
+
+    await this.prisma.client.update({
+      where: {
+        id: client.id,
+      },
+      data: {
+        users: {
+          disconnect: { id: userId },
+        },
+      },
+    });
+
+    return { message: 'User successfully disconnected from the client' };
   }
 }
