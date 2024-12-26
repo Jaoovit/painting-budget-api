@@ -13,7 +13,7 @@ model User {
   name    String
   hash    String
   colors  Color[]
-  clients Client[]
+  clients Client[] @relation("UserToClient")
 }
 
 model Color {
@@ -27,8 +27,7 @@ model Color {
 
 model Client {
   id      Int      @id @default(autoincrement())
-  userId  Int
-  user    User     @relation(fields: [userId], references: [id])
+  users   User[]   @relation("UserToClient")
   name    String
   email   String   @unique
   phone   String   @unique

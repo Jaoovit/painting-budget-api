@@ -1,26 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
 import { CreateClientDto } from './dto/create-client.dto';
 
 @Injectable()
 export class ClientService {
-  constructor(
-    private prisma: PrismaService,
-    private userService: UserService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async createClient(dto: CreateClientDto, userId: number) {
-    const user = await this.userService.getUserById(userId);
-
-    const client = await this.prisma.client.create({
-      data: {
-        name: dto.name,
+    let client = await this.prisma.client.findUnique({
+      where: {
         email: dto.email,
-        phone: dto.phone,
-        userId: user.id,
       },
     });
+
+    if (client) {
+      if (client.phone !== dto.phone)
+        throw new ConflictException(
+          'A client with this email already exists, but the phone number does not match.',
+        );
+
+      await this.prisma.client.update({
+        where: {
+          id: client.id,
+        },
+        data: {
+          users: {
+            connect: { id: userId },
+          },
+        },
+      });
+    } else {
+      client = await this.prisma.client.create({
+        data: {
+          name: dto.name,
+          email: dto.email,
+          phone: dto.phone,
+          users: {
+            connect: { id: userId },
+          },
+        },
+      });
+    }
 
     return client;
   }
