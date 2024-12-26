@@ -6,20 +6,22 @@ import { EditUserDto } from './dto/edit-user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async verifyUserExist(id: number) {
+  async getUserById(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id,
+        id: userId,
       },
     });
 
     if (!user) throw new NotFoundException('User not exist');
 
+    delete user.hash;
+
     return user;
   }
 
   async editUserName(dto: EditUserDto, userId: number) {
-    await this.verifyUserExist(userId);
+    await this.getUserById(userId);
 
     const user = await this.prisma.user.update({
       where: {
