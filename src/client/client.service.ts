@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateClientDto } from './dto/create-client.dto';
+import { EditClientDto } from './dto/edit-client.dto';
 
 @Injectable()
 export class ClientService {
@@ -49,7 +50,7 @@ export class ClientService {
     return client;
   }
 
-  async getClientByUserId(userId: number) {
+  async getClientsByUserId(userId: number) {
     const clients = await this.prisma.client.findMany({
       where: {
         users: {
@@ -63,7 +64,7 @@ export class ClientService {
     return clients;
   }
 
-  async getClientById(clientId: number, userId: number) {
+  async getClientByIdWithBudgets(clientId: number, userId: number) {
     const client = await this.prisma.client.findUnique({
       where: {
         id: clientId,
@@ -78,6 +79,32 @@ export class ClientService {
     });
 
     if (!client) throw new NotFoundException('Client not exist');
+
+    return client;
+  }
+
+  async getClientById(clientId: number) {
+    const client = await this.prisma.client.findUnique({
+      where: {
+        id: clientId,
+      },
+    });
+
+    return client;
+  }
+
+  async updateClient(dto: EditClientDto, clientId: number) {
+    let client = await this.getClientById(clientId);
+
+    if (!client) throw new NotFoundException('Client not exist');
+
+    client = await this.prisma.client.update({
+      where: { id: clientId },
+      data: {
+        email: dto.email,
+        phone: dto.phone,
+      },
+    });
 
     return client;
   }
